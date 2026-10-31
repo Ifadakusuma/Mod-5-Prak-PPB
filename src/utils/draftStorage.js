@@ -109,8 +109,33 @@ export const getAllDraftIds = () => {
 }
 
 /**
+ * Return all drafts with their parsed contents and metadata
+ */
+export const getAllDraftsWithDetails = () => {
+  const ids = getAllDraftIds()
+  return ids
+    .map((id) => {
+      const draft = loadDraft(id)
+      const ts = getDraftTimestamp(id) || draft?.savedAt
+      return {
+        id,
+        isCreate: id === 'create',
+        name: draft?.name || (id === 'create' ? 'Untitled New Hardware' : `Draft Edit (${id.slice(0, 8)})`),
+        type: draft?.type || draft?.category || 'Hardware',
+        caliber: draft?.caliber || '—',
+        price: draft?.price || 0,
+        timestamp: ts,
+        timeAgo: formatDraftTime(ts),
+        data: draft,
+      }
+    })
+    .sort((a, b) => new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime())
+}
+
+/**
  * Remove every gun draft from storage.
  */
 export const clearAllDrafts = () => {
   getAllDraftIds().forEach(deleteDraft)
 }
+
